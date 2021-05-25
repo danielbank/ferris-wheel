@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use core::f32::consts::FRAC_PI_2;
 
-struct Ball {
-    velocity: Vec3,
-}
+const ROTATION_SPEED: f32 = 200.;
+
+struct Particle {}
 
 fn main() {
     App::build()
@@ -11,7 +12,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(ShapePlugin)
         .add_startup_system(setup.system())
-        .add_system(ball_movement_system.system())
+        .add_system(rotation_system.system())
         .run();
 }
 
@@ -35,9 +36,7 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Ball {
-            velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
-        });
+        .insert(Particle {});
     commands
         .spawn_bundle(GeometryBuilder::build_as(
             &line1,
@@ -48,9 +47,7 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Ball {
-            velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
-        });
+        .insert(Particle {});
     commands
         .spawn_bundle(GeometryBuilder::build_as(
             &line2,
@@ -61,16 +58,11 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Ball {
-            velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
-        });
+        .insert(Particle {});
 }
 
-fn ball_movement_system(time: Res<Time>, mut balls_query: Query<(&Ball, &mut Transform)>) {
-    // clamp the timestep to stop the ball from escaping when the game starts
-    let delta_seconds = f32::min(0.2, time.delta_seconds());
-
-    balls_query.iter_mut().for_each(|(ball, mut transform)| {
-        transform.translation += ball.velocity * delta_seconds;
+fn rotation_system(mut particles_query: Query<(&Particle, &mut Transform)>) {
+    particles_query.iter_mut().for_each(|(_, mut transform)| {
+        transform.rotate(Quat::from_rotation_z(FRAC_PI_2 / ROTATION_SPEED));
     });
 }
