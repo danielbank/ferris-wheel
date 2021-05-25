@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
-use core::f32::consts::FRAC_PI_2;
+use core::f64::consts::FRAC_PI_2;
 
-const ROTATION_SPEED: f32 = 200.;
+const TORQUE: f64 = 10.0;
+const ROTATION_SPEED: f64 = 2.;
 
-struct Particle {}
+struct Particle {
+    omega: f64,
+}
 
 fn main() {
     App::build()
@@ -36,7 +39,9 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Particle {});
+        .insert(Particle {
+            omega: FRAC_PI_2 / ROTATION_SPEED,
+        });
     commands
         .spawn_bundle(GeometryBuilder::build_as(
             &line1,
@@ -47,7 +52,9 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Particle {});
+        .insert(Particle {
+            omega: FRAC_PI_2 / ROTATION_SPEED,
+        });
     commands
         .spawn_bundle(GeometryBuilder::build_as(
             &line2,
@@ -58,11 +65,20 @@ fn setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(Particle {});
+        .insert(Particle {
+            omega: FRAC_PI_2 / ROTATION_SPEED,
+        });
 }
 
-fn rotation_system(mut particles_query: Query<(&Particle, &mut Transform)>) {
-    particles_query.iter_mut().for_each(|(_, mut transform)| {
-        transform.rotate(Quat::from_rotation_z(FRAC_PI_2 / ROTATION_SPEED));
-    });
+fn rotation_system(time: Res<Time>, mut particles_query: Query<(&Particle, &mut Transform)>) {
+    particles_query
+        .iter_mut()
+        .for_each(|(particle, mut transform)| {
+            let omega_prime = (particle.omega - time.seconds_since_startup() / TORQUE) as f32;
+            transform.rotate(Quat::from_rotation_z(if omega_prime > 0.0 {
+                omega_prime
+            } else {
+                0.0
+            }));
+        });
 }
