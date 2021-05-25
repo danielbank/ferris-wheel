@@ -38,31 +38,39 @@ fn setup(mut commands: Commands) {
         .insert(Ball {
             velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
         });
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &line1,
-        ShapeColors::outlined(Color::CRIMSON, Color::BLACK),
-        DrawMode::Outlined {
-            fill_options: FillOptions::default(),
-            outline_options: StrokeOptions::default().with_line_width(10.0),
-        },
-        Transform::default(),
-    ));
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &line2,
-        ShapeColors::outlined(Color::CRIMSON, Color::BLACK),
-        DrawMode::Outlined {
-            fill_options: FillOptions::default(),
-            outline_options: StrokeOptions::default().with_line_width(10.0),
-        },
-        Transform::default(),
-    ));
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &line1,
+            ShapeColors::outlined(Color::CRIMSON, Color::BLACK),
+            DrawMode::Outlined {
+                fill_options: FillOptions::default(),
+                outline_options: StrokeOptions::default().with_line_width(10.0),
+            },
+            Transform::default(),
+        ))
+        .insert(Ball {
+            velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
+        });
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &line2,
+            ShapeColors::outlined(Color::CRIMSON, Color::BLACK),
+            DrawMode::Outlined {
+                fill_options: FillOptions::default(),
+                outline_options: StrokeOptions::default().with_line_width(10.0),
+            },
+            Transform::default(),
+        ))
+        .insert(Ball {
+            velocity: 400.0 * Vec3::new(0.5, -0.5, 0.0).normalize(),
+        });
 }
 
-fn ball_movement_system(time: Res<Time>, mut ball_query: Query<(&Ball, &mut Transform)>) {
+fn ball_movement_system(time: Res<Time>, mut balls_query: Query<(&Ball, &mut Transform)>) {
     // clamp the timestep to stop the ball from escaping when the game starts
     let delta_seconds = f32::min(0.2, time.delta_seconds());
 
-    if let Ok((ball, mut transform)) = ball_query.single_mut() {
+    balls_query.iter_mut().for_each(|(ball, mut transform)| {
         transform.translation += ball.velocity * delta_seconds;
-    }
+    });
 }
